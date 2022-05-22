@@ -14,5 +14,6 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    Log::info($user->id . ' ' . $id);
     return (int) $user->id === (int) $id;
 });

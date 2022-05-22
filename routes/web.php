@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,16 +19,25 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('whoami', function () {
-    $user = Illuminate\Support\Facades\Auth::user();
+Route::get('/login', function () {
+    Auth::login(User::first());
 
-    echo $user ? $user->name : 'no body';
+    return redirect('/');
+})->name('login');
+
+Route::get('logout', function () {
+    Auth::logout();
+
+    return redirect('/');
 });
 
-Route::get('auth', function () {
-    $user = App\Models\User::first() ?: App\Models\User::factory()->create();
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
 
-    Illuminate\Support\Facades\Auth::login($user);
+    Route::get('orders', [\App\Http\Controllers\OrderController::class, 'index']);
+    Route::post('orders/pay', [\App\Http\Controllers\OrderController::class, 'pay']);
+});
 
-    return redirect('/whoami');
+Route::group(['middleware' => 'auth', 'prefix' => 'api'], function () {
+    Route::get('notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
 });
